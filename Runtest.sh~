@@ -1,0 +1,2 @@
+#!/bin/sh
+./rttree Subscription_10K_Test.dat -1 Message_100_Test.dat -1

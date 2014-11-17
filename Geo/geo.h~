@@ -1,0 +1,167 @@
+// $Id: geo.h 5444 2012-03-11 11:41:41Z haowu $
+
+/*
+* common.h
+*
+*  Created on: Jun 30, 2011
+*      Author: Hao Wu
+*/
+
+#ifndef _ETC_GEO_GEO_H_
+#define _ETC_GEO_GEO_H_
+
+//
+
+#include"../Util/base.h"
+#include"../Util/keyvaluepair.h"
+//
+
+struct Coordinate
+{
+  Coordinate()
+  {
+  }
+  Coordinate(float x, float y)
+    : x_(x), y_(y)
+  {
+  }
+  Coordinate(const Coordinate& coord)
+    : x_(coord.x_), y_(coord.y_)
+  {
+  }
+  float x_;
+  float y_;
+};
+
+//
+//
+//
+
+struct Dimension
+{
+  Dimension()
+  {
+  }
+  Dimension(float w, float h)
+    : w_(w), h_(h)
+  {
+  }
+  Dimension(const Dimension& dim)
+    : w_(dim.w_), h_(dim.h_)
+  {
+  }
+  float w_;
+  float h_;
+};
+
+//
+//
+//
+
+struct Point
+{
+  Point()
+  {
+  }
+  Point(float x, float y)
+    : coord_(Coordinate(x, y))
+  {
+  }
+  Point(const Coordinate& coord)
+    : coord_(coord)
+  {
+  }
+  Point(const Point& p)
+    : coord_(p.coord_)
+  {
+  }
+  Coordinate coord_;
+};
+
+//
+//rootMBR,//
+//
+
+struct S_Rectangle
+{
+  S_Rectangle()
+  {
+  }
+  S_Rectangle(float x1, float y1, float x2, float y2)
+    : coord1_(Coordinate(x1, y1)), coord2_(Coordinate(x2, y2))
+  {
+  }
+  S_Rectangle(const Coordinate& coord1, const Coordinate& coord2)
+    : coord1_(coord1), coord2_(coord2)
+  {
+  }
+  S_Rectangle(const S_Rectangle& rect)
+    : coord1_(rect.coord1_), coord2_(rect.coord2_)
+  {
+  }
+  Coordinate coord1_;
+  Coordinate coord2_;
+};
+
+struct GeoText_Query{
+public:
+   int id; //query id
+   vector<int> tokens; //<token, token-weight>
+   S_Rectangle rect;
+   GeoText_Query(int _id, vector<int> _tokens,float _x1, float _y1, float _x2, float _y2):id(_id),rect(S_Rectangle(_x1,_y1,_x2,_y2)){
+	for(int z=0;z<(int)_tokens.size();z++){
+			tokens.push_back(_tokens[z]);
+	}
+   }
+};
+
+
+struct MESSAGE{
+public:
+	int id;
+	vector<int> messagetoken;
+	S_Rectangle rect;
+	MESSAGE(int _id,vector<int> _tokens,float _x1,float _y1,float _x2,float _y2):id(_id),rect(S_Rectangle(_x1,_y1,_x2,_y2)){
+	for(int z=0;z<(int)_tokens.size();z++){
+			messagetoken.push_back(_tokens[z]);
+	}
+	}
+};
+
+//
+//
+//
+
+class Geo
+{
+public:
+  //static float CalcDist(const Point& point1, const Point& point2);
+static float CalcDist(const Point& point1, const Point& point2)
+{
+  float dx = point2.coord_.x_ - point1.coord_.x_;
+  float dy = point2.coord_.y_ - point1.coord_.y_;
+  return sqrt(pow(dx, 2) + pow(dy, 2));
+}
+  static float CalcMinDist(const Point& point, const S_Rectangle& rect);
+    static float CalMinDistInside(const Point &point, const S_Rectangle &rect);
+  static float CalcMaxDist(const Point& point, const S_Rectangle& rect);
+  static float CalcSpatialSimilarity(float _euc_dist, float _max_spatial_dist);
+  static float  CalcExpandedRectanglePruningAbility(const S_Rectangle &_br, const S_Rectangle &_rootMBR,float _expandspatialsimilarity,float _glo_maxeucdist,float _glo_maxarea);
+  static bool Contain(const Point& point, const S_Rectangle& rect);
+  static bool Contain(const S_Rectangle& rect_small, const S_Rectangle& rect_large);
+  static bool Overlap(const S_Rectangle& rect1, const S_Rectangle& rect2);
+
+};
+
+
+
+//
+//
+//
+inline float Geo::CalcSpatialSimilarity(float _euc_dist, float _max_spatial_dist){
+	if(_euc_dist>=_max_spatial_dist)
+		return 0;
+	else return 1-_euc_dist/_max_spatial_dist;
+}
+
+#endif /* _ETC_GEO_COMMON_H_ */
